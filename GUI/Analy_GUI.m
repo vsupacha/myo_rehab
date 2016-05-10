@@ -73,7 +73,7 @@ handles.output = hObject;
 guidata(hObject, handles);
 
 % UIWAIT makes Analy_GUI wait for user response (see UIRESUME)
-% uiwait(handles.figure1);
+uiwait(handles.figure1);
 
 % --- Executes on button press in FileBro_Pushbutton.
 function FileBro_Pushbutton_Callback(hObject, eventdata, handles)

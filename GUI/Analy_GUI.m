@@ -631,13 +631,8 @@ function listChoice_Callback(hObject, eventdata, handles)
 Choice = get(hObject,'Value');
 
 if Choice == 1
-%From Artit 
-%     [filename] = uigetfile({'*.csv';'*.txt'},'File Selector');
-%     emg = readtable(filename,'Format','%d%d%d%d%d%d%d%d%d');
-%     long = height(emg);
-%     set(handles.edit1,'string',filename);
-%     set(handles.edit2,'string',long);
-%My test Apparently work
+%Apparently it works
+    [FileName,PathName,FilterIndex] = uigetfile({'*.csv';'*.txt'},'Select the record'); %FilterIndex is not useful for now but maybe later
     set(handles.txtNameFile,'string',FileName);
     Path = strcat(PathName,FileName);
     emg = readtable(Path);

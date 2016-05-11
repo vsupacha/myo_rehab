@@ -22,7 +22,7 @@ function varargout = Analy_GUI(varargin)
 
 % Edit the above text to modify the response to help Analy_GUI
 
-% Last Modified by GUIDE v2.5 26-Apr-2016 16:49:13
+% Last Modified by GUIDE v2.5 11-May-2016 18:54:27
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -617,3 +617,55 @@ function edit4_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on selection change in listChoice.
+function listChoice_Callback(hObject, eventdata, handles)
+% hObject    handle to listChoice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: contents = cellstr(get(hObject,'String')) returns listChoice contents as cell array
+%        contents{get(hObject,'Value')} returns selected item from listChoice
+
+Choice = get(hObject,'Value');
+
+if Choice == 1
+%From Artit 
+%     [filename] = uigetfile({'*.csv';'*.txt'},'File Selector');
+%     emg = readtable(filename,'Format','%d%d%d%d%d%d%d%d%d');
+%     long = height(emg);
+%     set(handles.edit1,'string',filename);
+%     set(handles.edit2,'string',long);
+%My test Apparently work
+    set(handles.txtNameFile,'string',FileName);
+    Path = strcat(PathName,FileName);
+    emg = readtable(Path);
+    %Work the same way as : 
+    %emg =
+    %readtable(Path,'ReadVariableNames',true,'Format','%d%d%d%d%d%d%d%d%d','Delimiter',',');
+elseif Choice == 2
+    open('Myo_Capture.fig');
+    close('Analy_GUI');
+end
+
+% --- Executes during object creation, after setting all properties.
+function listChoice_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to listChoice (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: listbox controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+
+% --- Executes on button press in cmdSetting.
+function cmdSetting_Callback(hObject, eventdata, handles)
+% hObject    handle to cmdSetting (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+open('Setting.fig');

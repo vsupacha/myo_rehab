@@ -50,18 +50,18 @@ function ploter2 = ploter2(handles)
             j = j+1;
         elseif sum(PP) == 0
             P2 = [];
-            cla(handles.axes1)
+            cla(handles.rawDataPlot)
         end
     end
     SS = P2;
     ploter2 = SS;
     
     if(handles.s9==1)
-        axes(handles.axes1)
+        axes(handles.rawDataPlot)
         plot(SS);
         ylim([-150 150])
     else
-        axes(handles.axes1)
+        axes(handles.rawDataPlot)
         plot(SS);
         ylim([-10 150])
     end

@@ -49,7 +49,7 @@ function ploter = ploter(handles)
         Thres = envelop_hilbert_v2(SS,20,true,20,false);
         X = 1:length(SS);
         Y = max(SS)*Thres;
-        axes(handles.axes2)
+        axes(handles.processedDataPlot)
         plot(X,Y(1:length(SS)),X,SS);
         ylim([-10 150])
         zoom on;
@@ -60,12 +60,12 @@ function ploter = ploter(handles)
         PowerCal(PP);
     else
         if(min(SS)<0)
-            axes(handles.axes2)
+            axes(handles.processedDataPlot)
             plot(SS);
             ylim([-150 150])
             zoom on;
         else
-            axes(handles.axes2)
+            axes(handles.processedDataPlot)
             plot(SS);
             ylim([-10 150])
             zoom on;

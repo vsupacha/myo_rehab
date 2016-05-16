@@ -3,8 +3,8 @@
 sudo usermod -a -G dialout $USER
 
 ###dependencies
-sudo apt-get install python-pip
-sudo pip install pySerial --upgrade
+sudo apt-get install python-pip \n
+sudo pip install pySerial --upgrade \n
 sudo pip install enum34
 sudo pip install PyUserInput
 sudo apt-get install python-Xlib

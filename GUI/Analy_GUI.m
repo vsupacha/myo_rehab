@@ -55,7 +55,8 @@ function Analy_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for Analy_GUI
     handles.output = hObject;
-    %Init 'ploter2.m'
+    
+    %Init variables 'ploter2.m'
     handles.current_data = 0;
     handles.s1 = 0;
     handles.s2 = 0;
@@ -67,7 +68,7 @@ function Analy_GUI_OpeningFcn(hObject, eventdata, handles, varargin)
     handles.s8 = 0;
     handles.s9 = 0;
     
-    %Init 'ploter.m'
+    %Init variables 'ploter.m'
     handles.current_data2 = 0;
     handles.state1 = 0;
     handles.state2 = 0;
@@ -103,42 +104,45 @@ function popupChoice_Callback(hObject, eventdata, handles)
 % Hints: contents = cellstr(get(hObject,'String')) returns popupChoice contents as cell array
 %        contents{get(hObject,'Value')} returns selected item from popupChoice
 
-Choice = get(hObject,'Value');
+Choice = get(hObject,'Value');      %Get the value of the popup menu
 
 if Choice == 1
-    %Apparently it works
+    % Get and Read the file.
+    %Get FileName, PathName, and FilterIndex of the choosen File.
     [FileName,PathName,FilterIndex] = uigetfile({'*.csv';'*.txt'},'Select the record'); %FilterIndex is not useful for now but maybe later
-    set(handles.txtFileName,'string',FileName);
-    Path = strcat(PathName,FileName);
-    emg = readtable(Path);
-    length = height(emg);
-    set(handles.txtFileLength,'string',length);
-    
+    set(handles.txtFileName,'string',FileName);     %Write the name of the file into the textbox
+    Path = strcat(PathName,FileName);               %Concatenate Path & FileName
+    emg = readtable(Path);                          %Read the Table contain into the file
     %Work the same way as : 
     %emg =
     %readtable(Path,'ReadVariableNames',true,'Format','%d%d%d%d%d%d%d%d%d','Delimiter',',');
-   
-    emg1 = double(table2array(emg(:,2)));
-    emg2 = double(table2array(emg(:,3)));
+    length = height(emg);                           %Calculate the numer of 'samples' (NB : 200Hz = 200 samples/s
+    set(handles.txtFileLength,'string',length);     %Write number of 'samples' into the textbox
+    
+    % Put data from the table to 8 different variables
+    emg1 = double(table2array(emg(:,2)));   %Begin in data 2, because the first one is the given name of the file by acquisition program
+    emg2 = double(table2array(emg(:,3)));  
     emg3 = double(table2array(emg(:,4)));
     emg4 = double(table2array(emg(:,5)));
     emg5 = double(table2array(emg(:,6)));
     emg6 = double(table2array(emg(:,7)));
     emg7 = double(table2array(emg(:,8)));
     emg8 = double(table2array(emg(:,9)));
-    emgdata = [emg1,emg2,emg3,emg4,emg5,emg6,emg7,emg8];
-    setappdata(0,'emgdata',emgdata);
-
-    RMS_EMG = rms(emgdata,200);
-    setappdata(0,'RMS_EMG',RMS_EMG);
-
-    total_RMS = 0;
+    emgdata = [emg1,emg2,emg3,emg4,emg5,emg6,emg7,emg8];    %Put each variable into a matrix(8,NumberOfSamples)
+    setappdata(0,'emgdata',emgdata);    %Same as handles.emgdata= at previous line, maybe change in future.
     
-    for i =1:8
-        total_RMS = total_RMS+RMS_EMG(:,i);
-        %total_env = total_env+env_EMG(:,i);
-    end
-
+    % Calculate RMS
+    RMS_EMG = rms(emgdata,200);         %Calculate rms using emgdata matrix and the frequency : 200Hz
+    setappdata(0,'RMS_EMG',RMS_EMG);    %Same as handles.RMS_EMG= at previous line, maybe change in future.
+    
+     % Not used anymore
+%     total_RMS = 0;                      %Initialisation
+%     for i =1:8
+%         total_RMS = total_RMS+RMS_EMG(:,i);
+%         %total_env = total_env+env_EMG(:,i);
+%     end
+    
+    % Calculating enveloppe detection using function 'env_detector' -> Hilbert
     window = 20;
     env_EMG1 = env_detector(emg1,window);
     env_EMG2 = env_detector(emg2,window);
@@ -152,9 +156,10 @@ if Choice == 1
     setappdata(0,'env_EMG',env_EMG);
 
 elseif Choice == 2
-
-    Function_Myo_Capture();
-    
+    % Open Interactive Interface
+    close('Analy_GUI');
+    run('Myo_Capture.m');
+        
 end
 
 % --- Executes during object creation, after setting all properties.
@@ -169,6 +174,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+% Choice of which raw data we want to plot (Raw / RMS)
 % --- Executes on selection change in rawDataChoice.
 function rawDataChoice_Callback(hObject, eventdata, handles)
 str = get(hObject, 'String');
@@ -207,6 +213,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+% Plotting each raw signals depending of buttons which are on.
 % --- Executes on selection change in rawSignal_1.
 function rawSignal_1_Callback(hObject, eventdata, handles)
 if (get(hObject,'Value') == get(hObject,'Max'))
@@ -311,6 +318,7 @@ else
 end
 guidata(hObject,handles)
 
+% Plotting all raw signal if button is on
 % --- Executes on selection change in rawSignal_All.
 function rawSignal_All_Callback(hObject, eventdata, handles)
 if (get(hObject,'Value') == get(hObject,'Max'))
@@ -322,6 +330,8 @@ if (get(hObject,'Value') == get(hObject,'Max'))
     handles.s6 = 1;
     handles.s7 = 1;
     handles.s8 = 1;
+    handles.s9 = 1;
+    handles.current_data2 = 1;
     ploter2(handles);
     handles.pro = ploter2(handles);
 else
@@ -333,11 +343,15 @@ else
     handles.s6 = 0;
     handles.s7 = 0;
     handles.s8 = 0;
+    handles.s9 = 0;
+    handles.current_data2 = 0;
     ploter2(handles);
     handles.pro = ploter2(handles);
 end
 guidata(hObject,handles)
 
+
+% Plotting each analysed signals depending of buttons which are on.
 % --- Executes on selection change in analySignal_1.
 function analySignal_1_Callback(hObject, eventdata, handles)
 if (get(hObject,'Value') == get(hObject,'Max'))
@@ -442,6 +456,7 @@ else
 end
 guidata(hObject,handles)
 
+% Plotting all analysed signal if button is on
 % --- Executes on selection change in analySignal_All.
 function analySignal_All_Callback(hObject, eventdata, handles)
 if (get(hObject,'Value') == get(hObject,'Max'))
@@ -453,6 +468,8 @@ if (get(hObject,'Value') == get(hObject,'Max'))
     handles.state6 = 1;
     handles.state7 = 1;
     handles.state8 = 1;
+    handles.state9 = 1;
+    handles.current_data = 1;
     ploter(handles);
     handles.pro2 = ploter(handles);
 else
@@ -464,11 +481,14 @@ else
     handles.state6 = 0;
     handles.state7 = 0;
     handles.state8 = 0;
+    handles.state9 = 0;
+    handles.current_data = 0;
     ploter(handles);
     handles.pro2 = ploter(handles);
 end
 guidata(hObject,handles)
 
+% Choice of which analyse we want
 % --- Executes on selection change in analyDataChoice.
 function analyDataChoice_Callback(hObject, eventdata, handles)
 str = get(hObject, 'String');
@@ -514,6 +534,7 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
     set(hObject,'BackgroundColor','white');
 end
 
+% Horizontal moving. Works with selection of data range to plot. 
 % --- Executes on selection change in dataOffsetSelect.
 function dataOffsetSelect_Callback(hObject, eventdata, handles)
 slider_main = get(hObject,'Value');
@@ -571,6 +592,7 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
+% Zoom on plotting data. Works with selection of data range to plot. 
 % --- Executes on selection change in dataLengthSelect.
 function dataLengthSelect_Callback(hObject, eventdata, handles)
 slider_adj = get(hObject,'Value');
@@ -592,10 +614,11 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
+% Open setting screen.
 % --- Executes on button press in cmdSetting.
 function cmdSetting_Callback(hObject, eventdata, handles)
 % hObject    handle to cmdSetting (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-open('Setting.fig');
+run('Setting.m');

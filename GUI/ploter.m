@@ -1,4 +1,5 @@
 function ploter = ploter(handles)
+
     if(handles.state1==1)
         handles.plot1 = handles.current_data2(:,1);
     else

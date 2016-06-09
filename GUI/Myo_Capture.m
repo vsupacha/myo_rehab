@@ -22,7 +22,7 @@ function varargout = Myo_Capture(varargin)
 
 % Edit the above text to modify the response to help Myo_Capture
 
-% Last Modified by GUIDE v2.5 31-May-2016 16:00:42
+% Last Modified by GUIDE v2.5 08-Jun-2016 12:19:11
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -56,25 +56,38 @@ function Myo_Capture_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for Myo_Capture
 handles.output = hObject;
     
-    handles.SaveName = ''; %How to rename the file, Save Part
-    
-    
-    %Be careful no spaces
-    %handles for Directory are not initialize because they are selected
-    %with settings
-    %Remember to delete when settings will be available
-    
-    %Init All Roots Directory.
-    %Should be done with Settings
-    %Find a way to init without settings at the begining.
-    %Maybe un if si on appuie sur le bouton setting. Si 1 -> on lance pas
-    %les handles en dessous, sinon on les lance.
-   
-    Directory_Application = 'C:\Users\Kevin\Documents\GitHub\myo_rehab\GUI';
-   %---
-    
 % Update handles structure
 guidata(hObject, handles);
+
+%Init Graphs
+x = 1:10;
+y = 0;
+        axes(handles.plotInterEmg1);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg2);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg3);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg4);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg5);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg6);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg7);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg8);
+        plot(x,y,'r');
+%---
+
+%Read Directories
+run( 'ReadDirectories.m' );
+%---
+
+%Run 'MyoConnect.exe'
+system( strcat (Directory_MyoConnect,'\MyoConnect.exe &') );
+pause(3);
+%---
 
 % UIWAIT makes Myo_Capture wait for user response (see UIRESUME)
 uiwait(handles.figure1);
@@ -110,9 +123,10 @@ run( 'ReadDirectories.m' );
 cd ( Directory_MyoCapture )
 %---
 
+%Just in case 'MyoConnect.exe' crash after openning 'MyoCapture.m'
 %Run 'MyoConnect.exe'
 system( strcat (Directory_MyoConnect,'\MyoConnect.exe &') );
-pause(5);
+pause(0.5);
 %---
 
 %Run 'MyoDataCapture.exe'
@@ -153,6 +167,40 @@ function cmdStop_Callback(hObject, eventdata, handles)
 system( 'taskkill /im MyoDataCapture.exe /F' ); %Have to rename the 'Myo Data Capture.exe' without spaces
 %Kill 'MyoConnect.exe'
 system( 'taskkill /im MyoConnect.exe /F' );     %Have to rename the 'Myo Connect.exe' without spaces
+%---
+
+% --- Executes on button press in cmdReset.
+function cmdReset_Callback(hObject, eventdata, handles)
+% hObject    handle to cmdReset (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+%Delete Temporary Files
+run( 'DeleteTemporaryFile.m' );
+%---
+%Clear Graphs
+x = 1:10;
+y = 0;
+        axes(handles.plotInterEmg1);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg2);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg3);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg4);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg5);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg6);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg7);
+        plot(x,y,'r');
+        axes(handles.plotInterEmg8);
+        plot(x,y,'r');
+%---
+
+%After 'cmdReset_Callback', function_acquisition stop run because of a bug, not a bad thing but
+%may be find a better way to stop it at the end of 'cmdStop' button code.
 
 
 function editSaveName_Callback(hObject, eventdata, handles)
@@ -163,8 +211,6 @@ function editSaveName_Callback(hObject, eventdata, handles)
 % Hints: get(hObject,'String') returns contents of editSaveName as text
 %        str2double(get(hObject,'String')) returns contents of editSaveName as a double
 
-%Choose with which name we want to save the file
-handles.SaveName = get(handles.editSaveName,'string');
 
 % --- Executes during object creation, after setting all properties.
 function editSaveName_CreateFcn(hObject, eventdata, handles)
@@ -185,10 +231,29 @@ function cmdSave_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
+%In case no event on Stop Button before Save Button
+%Kill 'MyoDataCapture.exe
+system( 'taskkill /im MyoDataCapture.exe /F' ); %Have to rename the 'Myo Data Capture.exe' without spaces
+%---
+
+%Choose with which name we want to save the file
+SaveName = get(handles.editSaveName,'string');
+%---
+
+%Verification Name is not empty
+Comparaison = strcmp( 'SaveName' , '' );
+%---
+
+%If empty, break, else, continue code
+if Comparaison == 1
+    printf( 'Choose a name' );
+    return
+end
+%---
 
 %Find again the data file created by 'MyoDataCapture.exe'
-%Because the FileName is deleted after the cmdRun_Callbac function
-%Don't know why
+%Because the FileName variable is deleted after the execution of 'cmdRun_Callback' function
+%Find the .csv File
 run( 'FindCreatedFile.m' );
 %---
 
@@ -196,12 +261,16 @@ run( 'FindCreatedFile.m' );
 Directory_SaveFile = uigetdir( Directory_RootSave, 'Choose which folder you want for saving data' );
 %---
 
-%Get File
+%Path File
 PathFile = strcat( Directory_MyoCapture , '\' , FileName );
 %---
+%Path Rename Saved File
+PathSaveFile = strcat( Directory_SaveFile , '\' , SaveName , '.csv' );
+%---
 
-%Move record
-movefile( PathFile , Directory_SaveFile , 'f' );
+%Move record and rename it :
+cmd = ['move' , ' ' , PathFile , ' ' , PathSaveFile ]
+system ( cmd );
 %---
 %Find the way to rename the file with de string in the edit. If nothing in
 %the edt, do not rename.
@@ -210,18 +279,6 @@ movefile( PathFile , Directory_SaveFile , 'f' );
 run( 'DeleteTemporaryFile.m' );
 
 %After 'cmdSave_Callback', function_acquisition stop run because of a bug, not a bad thing but
-%may be find a better way to stop it at the end of 'cmdStop' button code.
-
-
-% --- Executes on button press in cmdDelete.
-function cmdDelete_Callback(hObject, eventdata, handles)
-% hObject    handle to cmdDelete (see GCBO)
-% eventdata  reserved - to be defined in a future version of MATLAB
-% handles    structure with handles and user data (see GUIDATA)
-
-run( 'DeleteTemporaryFile.m' )
-
-%After 'cmdDelete_Callback', function_acquisition stop run because of a bug, not a bad thing but
 %may be find a better way to stop it at the end of 'cmdStop' button code.
 
 
@@ -238,6 +295,12 @@ function cmdGUI_Callback(hObject, eventdata, handles)
 % hObject    handle to cmdGUI (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+
+%Kill 'MyoDataCapture.exe
+system( 'taskkill /im MyoDataCapture.exe /F' ); %Have to rename the 'Myo Data Capture.exe' without spaces
+%Kill 'MyoConnect.exe'
+system( 'taskkill /im MyoConnect.exe /F' );     %Have to rename the 'Myo Connect.exe' without spaces
+%---
 
 close( 'Myo_Capture' );
 run( 'Analy_GUI.m' );
